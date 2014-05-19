@@ -13,9 +13,7 @@
  for example: the threshold is 50.
  'None': the refrsh control is not refreshing and the height of refresh control is 0.
  'NotReady': the refresh control is not refreshing and the height of refresh control is between 0 to 50.
-   NOTE: the change of scrollview's tracking property will delay about 8.0 point after user lift finger. Thus, the distance
-         of 'NotReady' state is actually 58 -- 8.0 point plus threshold. But Y-Offset change percent will be limited in 0 - 1.0.
- 'ready':the height of refresh control is bigger than 57 and user lift his finger.
+ 'ready':the height of refresh control is bigger than 50 and user lift his finger.
  'Refreshing': the refresh control is in refreshing state.
  'ending refresh': the refresh control is ending the refreshing state.
  */

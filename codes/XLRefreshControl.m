@@ -12,8 +12,8 @@
 
 @property (nonatomic, assign) XLRefreshControlState refreshState;
 @property (nonatomic, assign) BOOL isRefreshing;
-@property (nonatomic, assign) BOOL isEndingRefreshing;
 
+@property (nonatomic, assign) BOOL isEndingRefreshing;
 @property (nonatomic, assign) BOOL shouldProtectRefreshingState;
 
 @property (nonatomic, weak) UILabel *label;
@@ -21,8 +21,6 @@
 @end
 
 @implementation XLRefreshControl
-
-static const CGFloat kXL_RefreshControlScrollViewOffsetCorrection = 8.0;
 
 - (void)beginRefreshing
 {
@@ -94,7 +92,7 @@ static const CGFloat kXL_RefreshControlScrollViewOffsetCorrection = 8.0;
     [self XL_UpdateFrame];
     [self refreshControlSetup];
     [self.superview addObserver:self forKeyPath:@"contentInset" options:NSKeyValueObservingOptionNew context:nil];
-    [self.superview addObserver:self forKeyPath:@"contentOffset" options:NSKeyValueObservingOptionNew context:nil];
+    [self.superview addObserver:self forKeyPath:@"contentOffset" options:NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew context:nil];
     [self.superview addObserver:self forKeyPath:@"frame" options:NSKeyValueObservingOptionNew context:nil];
 }
 
@@ -118,17 +116,26 @@ static const CGFloat kXL_RefreshControlScrollViewOffsetCorrection = 8.0;
             self.refreshState = XLRefreshControlStateEndingRefresh;
         } else if (height == 0) {
             self.refreshState = XLRefreshControlStateNone;
-        } else if (height <= [self refreshControlThreshold] + kXL_RefreshControlScrollViewOffsetCorrection) {
+        } else if (height <= [self refreshControlThreshold]) {
             self.refreshState = XLRefreshControlStateNotReady;
             if (self.shouldProtectRefreshingState) { //特殊逻辑
                 self.shouldProtectRefreshingState = NO;
             }
-        } else if (height > [self refreshControlThreshold] + kXL_RefreshControlScrollViewOffsetCorrection) {
+        } else if (height > [self refreshControlThreshold]) {
             self.refreshState = XLRefreshControlStateReady;
         }
         
         //trigger refresh
-        if (height >= [self refreshControlThreshold] && ![self XL_SuperScrollView].isTracking && !self.isRefreshing && !self.isEndingRefreshing && !self.shouldProtectRefreshingState) {
+        CGPoint oldContentOffset;
+        [change[NSKeyValueChangeOldKey] getValue:&oldContentOffset];
+        CGFloat oldHeight = -oldContentOffset.y - [self XL_SuperScrollView].contentInset.top;
+        oldHeight = oldHeight > 0 ? oldHeight : 0;
+        
+        if ((height >= [self refreshControlThreshold] || oldHeight >= [self refreshControlThreshold])
+            && ![self XL_SuperScrollView].isTracking
+            && !self.isRefreshing
+            && !self.isEndingRefreshing
+            && !self.shouldProtectRefreshingState) {
             self.isRefreshing = YES;
         }
         

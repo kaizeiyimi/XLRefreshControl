@@ -24,6 +24,7 @@
     label.center = CGPointMake(CGRectGetMidX(self.bounds), 20);
     [self addSubview:label];
     self.label = label;
+    self.clipsToBounds = YES;
 }
 
 - (CGFloat)refreshControlThreshold

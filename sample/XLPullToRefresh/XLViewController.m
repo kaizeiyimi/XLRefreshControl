@@ -23,10 +23,10 @@
 {
     [super viewDidLoad];
     //the XLRefreshControl provide a very simple behavior. You can use XLRefreshControl directly or make a child class to custom.
-//    XLRefreshControl *refresh = [[XLRefreshControl alloc]init];
+    XLRefreshControl *refresh = [[XLRefreshControl alloc]init];
     
     //a very simple child class which shows how to custom refresh control.
-    XLRefreshControl *refresh = [[XLFirstRefreshControl alloc]init];
+//    XLRefreshControl *refresh = [[XLFirstRefreshControl alloc]init];
     
     //you can use it just as apple does.
     [refresh addTarget:self action:@selector(refreshData) forControlEvents:UIControlEventValueChanged];
