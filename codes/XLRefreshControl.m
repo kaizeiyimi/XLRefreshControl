@@ -56,6 +56,9 @@
             UIEdgeInsets insets = [self XL_SuperScrollView].contentInset;
             insets.top += [self refreshControlThreshold];
             [self XL_SuperScrollView].contentInset = insets;
+            if (-contentOffset.y < insets.top) {
+                contentOffset.y = -insets.top;
+            }
             [self XL_SuperScrollView].contentOffset = contentOffset;
         } else {
             self.isEndingRefreshing = YES;
@@ -68,6 +71,7 @@
             if (height > 0) {
                 [self XL_SuperScrollView].contentOffset = contentOffset;
                 contentOffset.y = - insets.top;
+                //TODO:修改策略，现有方式不会平滑过渡offset，而是一次性设置动画过渡
                 [UIView animateWithDuration:0.25 animations:^{
                     [self XL_SuperScrollView].contentOffset = contentOffset;
                 } completion:^(BOOL finished) {
