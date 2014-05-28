@@ -13,8 +13,9 @@
 @property (nonatomic, assign) XLRefreshControlState refreshState;
 @property (nonatomic, assign) BOOL isRefreshing;
 
-@property (nonatomic, assign) BOOL isEndingRefreshing;
 @property (nonatomic, assign) BOOL shouldProtectRefreshingState;
+@property (nonatomic, assign) BOOL isEndingRefreshing;
+@property (nonatomic, assign) BOOL shouldIgnoreKVO;
 
 @property (nonatomic, weak) UILabel *label;
 
@@ -24,11 +25,11 @@
 
 - (void)beginRefreshing
 {
-    if (!self.isRefreshing) {
+    if (!self.isRefreshing && self.refreshState == XLRefreshControlStateNone) {
         //内容的偏移加上刷新控件后也不会显示控件则不需要动画
         if ([self XL_SuperScrollView].contentInset.top + [self XL_SuperScrollView].contentOffset.y > [self refreshControlThreshold]) {
             self.isRefreshing = YES;
-        } else if (self.refreshState == XLRefreshControlStateNone) {    //如果加上控件后会显示出控件则动画过渡
+        } else {    //如果加上控件后会显示出控件则动画过渡
             [[self XL_SuperScrollView] setContentOffset:CGPointMake(0, -([self XL_SuperScrollView].contentInset.top + [self refreshControlThreshold])) animated:YES];
         }
     }
@@ -52,6 +53,7 @@
             } else {
                 [self sendActionsForControlEvents:UIControlEventValueChanged];
             }
+            self.shouldIgnoreKVO = YES;
             CGPoint contentOffset = [self XL_SuperScrollView].contentOffset;
             UIEdgeInsets insets = [self XL_SuperScrollView].contentInset;
             insets.top += [self refreshControlThreshold];
@@ -59,27 +61,25 @@
             if (-contentOffset.y < insets.top) {
                 contentOffset.y = -insets.top;
             }
+            self.shouldIgnoreKVO = NO;
             [self XL_SuperScrollView].contentOffset = contentOffset;
         } else {
+            self.shouldIgnoreKVO = YES;
+            self.refreshState = XLRefreshControlStateEndingRefresh;
             self.isEndingRefreshing = YES;
             CGPoint contentOffset = [self XL_SuperScrollView].contentOffset;
             CGFloat height = CGRectGetHeight(self.bounds);
             UIEdgeInsets insets = [self XL_SuperScrollView].contentInset;
             insets.top -= [self refreshControlThreshold];
             [self XL_SuperScrollView].contentInset = insets;
-            
             if (height > 0) {
                 [self XL_SuperScrollView].contentOffset = contentOffset;
                 contentOffset.y = - insets.top;
-                //TODO:修改策略，现有方式不会平滑过渡offset，而是一次性设置动画过渡
-                [UIView animateWithDuration:0.25 animations:^{
-                    [self XL_SuperScrollView].contentOffset = contentOffset;
-                } completion:^(BOOL finished) {
-                    self.isEndingRefreshing = NO;
-                }];
+                [[self XL_SuperScrollView] setContentOffset:contentOffset animated:YES];
             } else {
                 self.isEndingRefreshing = NO;
             }
+            self.shouldIgnoreKVO = NO;
         }
     }
 }
@@ -110,16 +110,22 @@
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
+    if ([self shouldIgnoreKVO]) {
+        return;
+    }
     [self XL_UpdateFrame];
     if ([keyPath isEqualToString:@"contentOffset"]) {
         CGFloat height = [self XL_AppropriateHeightWithExternalHeight:0];
         //更新偏移量位置状态
         if (self.isRefreshing) {
             self.refreshState = XLRefreshControlStateRefreshing;
-        } else if (self.isEndingRefreshing) {
+        }
+        else if (self.isEndingRefreshing && height > 0) {
             self.refreshState = XLRefreshControlStateEndingRefresh;
-        } else if (height == 0) {
+        }
+        else if (height == 0) {
             self.refreshState = XLRefreshControlStateNone;
+            self.isEndingRefreshing = NO;
         } else if (height <= [self refreshControlThreshold]) {
             self.refreshState = XLRefreshControlStateNotReady;
             if (self.shouldProtectRefreshingState) { //特殊逻辑
@@ -139,6 +145,7 @@
             && ![self XL_SuperScrollView].isTracking
             && !self.isRefreshing
             && !self.isEndingRefreshing
+            && (self.state != XLRefreshControlStateEndingRefresh)
             && !self.shouldProtectRefreshingState) {
             self.isRefreshing = YES;
         }
