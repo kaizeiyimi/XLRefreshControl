@@ -58,7 +58,7 @@
             UIEdgeInsets insets = [self XL_SuperScrollView].contentInset;
             insets.top += [self refreshControlThreshold];
             [self XL_SuperScrollView].contentInset = insets;
-            if (-contentOffset.y < insets.top) {
+            if (-contentOffset.y < insets.top && -contentOffset.y + [self refreshControlThreshold] > insets.top) {
                 contentOffset.y = -insets.top;
             }
             self.shouldIgnoreKVO = NO;
