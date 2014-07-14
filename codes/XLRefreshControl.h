@@ -13,7 +13,7 @@
  for example: the threshold is 50.
  'None': the refrsh control is not refreshing and the height of refresh control is 0.
  'NotReady': the refresh control is not refreshing and the height of refresh control is between 0 to 50.
- 'ready':the height of refresh control is bigger than 50 and user lift his finger.
+ 'ready':the height of refresh control is bigger than 50 and ready for refreshing.
  'Refreshing': the refresh control is in refreshing state.
  'ending refresh': the refresh control is ending the refreshing state.
  */
