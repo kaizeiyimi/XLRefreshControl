@@ -170,7 +170,7 @@
     self.shouldProtectRefreshingState = YES;
     self.isEndingRefreshing = NO;
     self.refreshState = XLRefreshControlStateNone;
-    self.shouldChangedContentInsetsTopWhenRefreshing = NO;
+    self.shouldChangedContentInsetsTopWhenRefreshing = YES;
 }
 
 - (UIScrollView *)XL_SuperScrollView
