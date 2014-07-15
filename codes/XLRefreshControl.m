@@ -55,36 +55,29 @@
             } else {
                 [self sendActionsForControlEvents:UIControlEventValueChanged];
             }
-            if (self.shouldIncreaseScrollViewInsetsTopWhenRefreshing) {
-                self.shouldIgnoreKVO = YES;
-                CGPoint contentOffset = [self XL_SuperScrollView].contentOffset;
-                UIEdgeInsets insets = [self XL_SuperScrollView].contentInset;
-                insets.top += [self refreshControlThreshold];
-                [self XL_SuperScrollView].contentInset = insets;
-                if (-contentOffset.y < insets.top && -contentOffset.y + [self refreshControlThreshold] > insets.top) {
-                    contentOffset.y = -insets.top;
-                }
-                self.shouldIgnoreKVO = NO;
-                [self XL_SuperScrollView].contentOffset = contentOffset;
+            self.shouldIgnoreKVO = YES;
+            CGPoint contentOffset = [self XL_SuperScrollView].contentOffset;
+            UIEdgeInsets insets = [self XL_SuperScrollView].contentInset;
+            insets.top += [self refreshControlThreshold];
+            [self XL_SuperScrollView].contentInset = insets;
+            if (-contentOffset.y < insets.top && -contentOffset.y + [self refreshControlThreshold] > insets.top) {
+                contentOffset.y = -insets.top;
             }
+            self.shouldIgnoreKVO = NO;
+            [self XL_SuperScrollView].contentOffset = contentOffset;
         } else {
             self.shouldIgnoreKVO = YES;
             self.refreshState = XLRefreshControlStateEndingRefresh;
             self.isEndingRefreshing = YES;
-            if (self.shouldIncreaseScrollViewInsetsTopWhenRefreshing) {
-                CGPoint contentOffset = [self XL_SuperScrollView].contentOffset;
-                CGFloat height = CGRectGetHeight(self.bounds);
-                UIEdgeInsets insets = [self XL_SuperScrollView].contentInset;
-                insets.top -= [self refreshControlThreshold];
-                [self XL_SuperScrollView].contentInset = insets;
-                if (height > 0) {
-                    [self XL_SuperScrollView].contentOffset = contentOffset;
-                    contentOffset.y = - insets.top;
-                    [[self XL_SuperScrollView] setContentOffset:contentOffset animated:YES];
-
-                } else {
-                    self.isEndingRefreshing = NO;
-                }
+            CGPoint contentOffset = [self XL_SuperScrollView].contentOffset;
+            CGFloat height = CGRectGetHeight(self.bounds);
+            UIEdgeInsets insets = [self XL_SuperScrollView].contentInset;
+            insets.top -= [self refreshControlThreshold];
+            [self XL_SuperScrollView].contentInset = insets;
+            if (height > 0) {
+                [self XL_SuperScrollView].contentOffset = contentOffset;
+                contentOffset.y = - insets.top;
+                [[self XL_SuperScrollView] setContentOffset:contentOffset animated:YES];
             } else {
                 self.isEndingRefreshing = NO;
             }
@@ -172,7 +165,6 @@
     self.shouldProtectRefreshingState = YES;
     self.isEndingRefreshing = NO;
     self.refreshState = XLRefreshControlStateNone;
-    self.shouldIncreaseScrollViewInsetsTopWhenRefreshing = YES;
 }
 
 - (UIScrollView *)XL_SuperScrollView
@@ -182,7 +174,7 @@
 
 - (void)XL_UpdateFrame
 {
-    CGFloat externalHeight = (self.isRefreshing && self.shouldIncreaseScrollViewInsetsTopWhenRefreshing ? [self refreshControlThreshold] : 0);
+    CGFloat externalHeight = (self.isRefreshing ? [self refreshControlThreshold] : 0);
     CGFloat height = [self XL_AppropriateHeightWithExternalHeight:externalHeight];
     self.frame = CGRectMake(0, - height, CGRectGetWidth([self XL_SuperScrollView].frame), height);
 }
