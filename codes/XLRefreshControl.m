@@ -38,7 +38,9 @@
 - (void)endRefreshing
 {
     if (self.isRefreshing) {
-        self.isRefreshing = NO;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self.isRefreshing = NO;
+        });
     }
 }
 
@@ -53,7 +55,7 @@
             } else {
                 [self sendActionsForControlEvents:UIControlEventValueChanged];
             }
-            if (self.shouldChangedContentInsetsTopWhenRefreshing) {
+            if (self.shouldIncreaseScrollViewInsetsTopWhenRefreshing) {
                 self.shouldIgnoreKVO = YES;
                 CGPoint contentOffset = [self XL_SuperScrollView].contentOffset;
                 UIEdgeInsets insets = [self XL_SuperScrollView].contentInset;
@@ -69,7 +71,7 @@
             self.shouldIgnoreKVO = YES;
             self.refreshState = XLRefreshControlStateEndingRefresh;
             self.isEndingRefreshing = YES;
-            if (self.shouldChangedContentInsetsTopWhenRefreshing) {
+            if (self.shouldIncreaseScrollViewInsetsTopWhenRefreshing) {
                 CGPoint contentOffset = [self XL_SuperScrollView].contentOffset;
                 CGFloat height = CGRectGetHeight(self.bounds);
                 UIEdgeInsets insets = [self XL_SuperScrollView].contentInset;
@@ -170,7 +172,7 @@
     self.shouldProtectRefreshingState = YES;
     self.isEndingRefreshing = NO;
     self.refreshState = XLRefreshControlStateNone;
-    self.shouldChangedContentInsetsTopWhenRefreshing = YES;
+    self.shouldIncreaseScrollViewInsetsTopWhenRefreshing = YES;
 }
 
 - (UIScrollView *)XL_SuperScrollView
@@ -180,7 +182,7 @@
 
 - (void)XL_UpdateFrame
 {
-    CGFloat externalHeight = (self.isRefreshing && self.shouldChangedContentInsetsTopWhenRefreshing ? [self refreshControlThreshold] : 0);
+    CGFloat externalHeight = (self.isRefreshing && self.shouldIncreaseScrollViewInsetsTopWhenRefreshing ? [self refreshControlThreshold] : 0);
     CGFloat height = [self XL_AppropriateHeightWithExternalHeight:externalHeight];
     self.frame = CGRectMake(0, - height, CGRectGetWidth([self XL_SuperScrollView].frame), height);
 }

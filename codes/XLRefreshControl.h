@@ -52,7 +52,7 @@ typedef NS_ENUM(NSInteger, XLRefreshControlState) {
 @property (nonatomic, assign, readonly) BOOL isRefreshing;
 
 ///config whether the refresh control should increase scroll contentInsets while refreshing. default is YES.
-@property (nonatomic, assign) BOOL shouldChangedContentInsetsTopWhenRefreshing;
+@property (nonatomic, assign) BOOL shouldIncreaseScrollViewInsetsTopWhenRefreshing;
 
 ///the refresh block. Refresh control will only trigger block if this is set while the target-action mode will be abandoned.
 @property (nonatomic, copy) dispatch_block_t refreshBlock;
