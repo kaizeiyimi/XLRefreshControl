@@ -26,12 +26,9 @@
 - (void)beginRefreshing
 {
     if (!self.isRefreshing && self.refreshState == XLRefreshControlStateNone) {
-        //内容的偏移加上刷新控件后也不会显示控件则不需要动画
-        if ([self XL_SuperScrollView].contentInset.top + [self XL_SuperScrollView].contentOffset.y > [self refreshControlThreshold]) {
-            self.isRefreshing = YES;
-        } else {    //如果加上控件后会显示出控件则动画过渡
+        dispatch_async(dispatch_get_main_queue(), ^{
             [[self XL_SuperScrollView] setContentOffset:CGPointMake(0, -([self XL_SuperScrollView].contentInset.top + [self refreshControlThreshold])) animated:YES];
-        }
+        });
     }
 }
 
@@ -65,6 +62,9 @@
             }
             self.shouldIgnoreKVO = NO;
             [self XL_SuperScrollView].contentOffset = contentOffset;
+            [UIView animateWithDuration:0.25 animations:^{
+                [self XL_SuperScrollView].contentOffset = CGPointMake(0, -insets.top);
+            }];
         } else {
             self.shouldIgnoreKVO = YES;
             self.refreshState = XLRefreshControlStateEndingRefresh;
